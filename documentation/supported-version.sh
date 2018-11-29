@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Generates the documentation/book/common/supported-kafka-versions.adoc
+# according to the values defined in kafka-versions
+
 FILE=$1
 
 VERSIONSNL=$(sed -E -e '/^(#.*|[[:space:]]*)$/d' -e 's/^([0-9.]+)[[:space:]]+.*[[:space:]]+([[:alnum:]]+)$/\1/g' ${FILE})
