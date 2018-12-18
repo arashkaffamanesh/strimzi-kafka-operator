@@ -71,8 +71,10 @@ pipeline {
     }
     post {
         always {
-            postAction(env.ARTIFACTS_DIR)
-            sendMail("jstejska@redhat.com")
+            script {
+                lib.postAction(env.ARTIFACTS_DIR)
+                lib.sendMail("jstejska@redhat.com")
+            }
         }
         failure {
             echo "Build failed"
