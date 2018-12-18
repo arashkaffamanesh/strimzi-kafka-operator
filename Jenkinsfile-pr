@@ -9,47 +9,56 @@ def setupEnvironment() {
     sh "sudo yum install -y zip"
     clearImages()
 
-    def status = sh(
-            script: "oc cluster down",
-            returnStatus: true
-    )
-    if (status == 0) {
-        sh "for i in \$(mount | grep openshift | awk '{ print \$3}'); do sudo umount \"\$i\"; done && sudo rm -rf /var/lib/origin"
-        sh "sudo rm -rf /usr/bin/oc"
-    }
+//    def status = sh(
+//            script: "oc cluster down",
+//            returnStatus: true
+//    )
+//    if (status == 0) {
+//        sh "for i in \$(mount | grep openshift | awk '{ print \$3}'); do sudo umount \"\$i\"; done && sudo rm -rf /var/lib/origin"
+//        sh "sudo rm -rf /usr/bin/oc"
+//    }
+
+    sh "oc cluster down"
+    sh "for i in \$(mount | grep openshift | awk '{ print \$3}'); do sudo umount \"\$i\"; done && sudo rm -rf /var/lib/origin"
+    sh "sudo rm -rf /usr/bin/oc"
+
     sh "mkdir -p /tmp/openshift"
 
     // Github refused connection sometimes, this should fix that
-    status = sh(
-            script: "wget $openshift -O openshift.tar.gz",
-            returnStatus: true
-    )
-
-    timeout(time: 10, unit: 'MINUTES') {
-        if (status != 0) {
-            status = sh(
-                    script: "wget $openshift -O openshift.tar.gz",
-                    returnStatus: true
-            )
-        }
-    }
+//    status = sh(
+//            script: "wget $openshift -O openshift.tar.gz",
+//            returnStatus: true
+//    )
+//
+//    timeout(time: 10, unit: 'MINUTES') {
+//        if (status != 0) {
+//            status = sh(
+//                    script: "wget $openshift -O openshift.tar.gz",
+//                    returnStatus: true
+//            )
+//        }
+//    }
     //////////////////////////////////////////////////
+
+    sh "wget $openshift -O openshift.tar.gz"
 
     sh "tar xzf openshift.tar.gz -C /tmp/openshift --strip-components 1"
     sh "sudo cp /tmp/openshift/oc /usr/bin/oc"
     sh "sudo rm -rf /tmp/openshift/"
     sh "sudo rm -rf openshift.tar.gz"
 
-    status = sh(
-            script: "oc cluster up --base-dir $WORKSPACE/origin/ --enable=*,service-catalog,web-console --insecure-skip-tls-verify=true",
-            returnStatus: true
-    )
+//    status = sh(
+//            script: "oc cluster up --base-dir $WORKSPACE/origin/ --enable=*,service-catalog,web-console --insecure-skip-tls-verify=true",
+//            returnStatus: true
+//    )
+//
+//    if (status != 0) {
+//        sleep(10)
+//        sh "oc cluster down"
+//        sh "oc cluster up --base-dir $WORKSPACE/origin/ --enable=*,service-catalog,web-console --insecure-skip-tls-verify=true"
+//    }
 
-    if (status != 0) {
-        sleep(10)
-        sh "oc cluster down"
-        sh "oc cluster up --base-dir $WORKSPACE/origin/ --enable=*,service-catalog,web-console --insecure-skip-tls-verify=true"
-    }
+    sh "oc cluster up --base-dir $WORKSPACE/origin/ --enable=*,service-catalog,web-console --insecure-skip-tls-verify=true"
 
     sh "export KUBECONFIG=$WORKSPACE/origin/kube-apiserver/admin.kubeconfig"
     def KUBECONFIG="$WORKSPACE/origin/kube-apiserver/admin.kubeconfig"
@@ -78,15 +87,16 @@ def downloadHelmChart() {
  * Function for teardown the test cluster.
  */
 def teardownEnvironment() {
-    def status = sh(
-            script: "oc cluster down",
-            returnStatus: true
-    )
+//    def status = sh(
+//            script: "oc cluster down",
+//            returnStatus: true
+//    )
+//
+//    if (status != 0) {
+//        echo "OpenShift failed to stop"
+//    }
 
-    if (status != 0) {
-        echo "OpenShift failed to stop"
-    }
-
+    sh "oc cluster down"
     sh "for i in \$(mount | grep openshift | awk '{ print \$3}'); do sudo umount \"\$i\"; done && sudo rm -rf $WORKSPACE/origin"
     sh "sudo rm -rf $WORKSPACE/origin/"
     clearImages()
@@ -137,7 +147,7 @@ pipeline {
     }
     parameters {
         //execute all tests as default for each new Pull request
-        string(name: 'TEST_CASE', defaultValue: '', description: 'maven parameter for executing specific tests')
+        string(name: 'JUNIT_TAG', defaultValue: '', description: 'maven parameter for executing specific tests')
     }
     options {
         timeout(time: 7, unit: 'HOURS')
