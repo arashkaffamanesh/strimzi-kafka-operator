@@ -185,7 +185,9 @@ pipeline {
 //            }
 //        }
         stage('Execute system tests') {
-            runSystemTests()
+            steps {
+                runSystemTests()
+            }
         }
     }
     post {
