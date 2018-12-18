@@ -124,10 +124,10 @@ def postAction(String artifactDir) {
     teardownEnvironment()
 }
 
-
 def sendMail(address) {
     mail to:"${address}", subject:"Strimzi PR build of job ${JOB_NAME} has failed", body:"See ${BUILD_URL}"
 }
+
 
 pipeline {
     agent {
@@ -162,23 +162,18 @@ pipeline {
         stage('Checkout Strimzi') {
             steps {
                 checkout scm
-                sh 'rm -rf artifacts && mkdir -p artifacts'
             }
         }
         stage('Start Openshift') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
-                    script {
-                        setupEnvironment()
-                    }
+                    setupEnvironment()
                 }
             }
         }
         stage('Build images') {
             steps {
-                script {
-                    buildStrimzi()
-                }
+                buildStrimzi()
             }
         }
 //        stage('push docker images') {
@@ -190,9 +185,7 @@ pipeline {
 //            }
 //        }
         stage('Execute system tests') {
-            steps {
-                runSystemTests()
-            }
+            runSystemTests()
         }
     }
     post {
