@@ -1,7 +1,7 @@
 /**
  * Function for setup the test cluster.
  */
-def setupEnvironment() {
+def setupEnvironment(String openshift) {
     sh "rm -rf ~/.kube"
     sh "sudo yum install -y zip"
     clearImages()
