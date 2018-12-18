@@ -4,7 +4,7 @@
 /**
  * Function for setup the test cluster.
  */
-def setupEnvironment() {
+void setupEnvironment() {
     sh "rm -rf ~/.kube"
     sh "sudo yum install -y zip"
     clearImages()
@@ -61,7 +61,7 @@ def setupEnvironment() {
     sh "oc cluster up --base-dir $WORKSPACE/origin/ --enable=*,service-catalog,web-console --insecure-skip-tls-verify=true"
 
     sh "export KUBECONFIG=$WORKSPACE/origin/kube-apiserver/admin.kubeconfig"
-    def KUBECONFIG="$WORKSPACE/origin/kube-apiserver/admin.kubeconfig"
+    String KUBECONFIG="$WORKSPACE/origin/kube-apiserver/admin.kubeconfig"
     sh "oc login -u system:admin"
     sh "oc --config ${KUBECONFIG} adm policy add-cluster-role-to-user cluster-admin developer"
 
@@ -74,8 +74,8 @@ def setupEnvironment() {
 /**
  * Function for download HelmChart
  */
-def downloadHelmChart() {
-    def version="2.11.0"
+void downloadHelmChart() {
+    String version="2.11.0"
     sh "mkdir /tmp/helm"
     sh "wget https://storage.googleapis.com/kubernetes-helm/helm-v$version-linux-amd64.tar.gz -O helm.tar.gz"
     sh "tar xzf helm.tar.gz -C /tmp/helm --strip-components 1"
@@ -86,7 +86,7 @@ def downloadHelmChart() {
 /**
  * Function for teardown the test cluster.
  */
-def teardownEnvironment() {
+void teardownEnvironment() {
 //    def status = sh(
 //            script: "oc cluster down",
 //            returnStatus: true
@@ -102,21 +102,21 @@ def teardownEnvironment() {
     clearImages()
 }
 
-def clearImages() {
+void clearImages() {
     sh "docker rmi -f \$(docker images -q) 2>/dev/null || echo 'No more images to remove.'"
 }
 
 
-def buildStrimzi() {
+void buildStrimzi() {
     sh "make docker_build"
 }
 
-def runSystemTests() {
+void runSystemTests() {
     sh "mvn -f ${WORKSPACE}/systemtest/pom.xml verify -DjunitTags=acceptance,regression -Djava.net.preferIPv4Stack=true -DtrimStackTrace=false -Dit.test=OpenShiftTemplatesST"
 }
 
-def postAction(String artifactDir) {
-    def status = currentBuild.result
+void postAction(String artifactDir) {
+    String status = currentBuild.result
     //store test results from build and system tests
     junit testResults: '**/TEST-*.xml', allowEmptyResults: true
     //archive test results and openshift logs
@@ -134,7 +134,7 @@ def postAction(String artifactDir) {
     teardownEnvironment()
 }
 
-def sendMail(address) {
+void sendMail(address) {
     mail to:"${address}", subject:"Strimzi PR build of job ${JOB_NAME} has failed", body:"See ${BUILD_URL}"
 }
 
